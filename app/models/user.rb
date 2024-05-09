@@ -56,67 +56,19 @@ class User < ApplicationRecord
 
   # User#discover: returns rows from the photos table associated to this user through its leaders (the leaders' liked_photos)
 
-  def comments
-    my_id = self.id
+  has_many(:comments, class_name: "Comment", foreign_key: "author_id")
 
-    matching_comments = Comment.where({ :author_id => my_id })
+  has_many(:own_photos, class_name: "Photo", foreign_key: "owner_id")
 
-    return matching_comments
-  end
+  has_many(:likes, class_name: "Like", foreign_key: "fan_id")
 
-  def own_photos
-    my_id = self.id
+  has_many(:liked_photos, through: :likes, source: :photo)
 
-    matching_photos = Photo.where({ :owner_id => my_id })
+  has_many(:commented_photos, through: :comments, source: :photo)
 
-    return matching_photos
-  end
+  has_many(:sent_follow_requests, class_name: "FollowRequest", foreign_key: "sender_id")
 
-  def likes
-    my_id = self.id
-
-    matching_likes = Like.where({ :fan_id => my_id })
-
-    return matching_likes
-  end
-
-  def liked_photos
-    my_likes = self.likes
-    
-    array_of_photo_ids = Array.new
-
-    my_likes.each do |a_like|
-      array_of_photo_ids.push(a_like.photo_id)
-    end
-
-    matching_photos = Photo.where({ :id => array_of_photo_ids })
-
-    return matching_photos
-  end
-
-  def commented_photos
-    my_comments = self.comments
-    
-    array_of_photo_ids = Array.new
-
-    my_comments.each do |a_comment|
-      array_of_photo_ids.push(a_comment.photo_id)
-    end
-
-    matching_photos = Photo.where({ :id => array_of_photo_ids })
-
-    unique_matching_photos = matching_photos.distinct
-
-    return unique_matching_photos
-  end
-
-  def sent_follow_requests
-    my_id = self.id
-
-    matching_follow_requests = FollowRequest.where({ :sender_id => my_id })
-
-    return matching_follow_requests
-  end
+  has_many(:received_follow_requests, class_name: "FollowRequest", foreign_key: "recipient_id")
 
   def received_follow_requests
     my_id = self.id
